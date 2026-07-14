@@ -24,7 +24,7 @@ const links = [
   { href: "/configuracion", label: "Configuración", icon: Settings },
 ];
 
-export function Sidebar() {
+export function Sidebar({ businessName }: { businessName: string }) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -39,8 +39,8 @@ export function Sidebar() {
     <aside className="sticky top-0 flex h-screen w-16 shrink-0 flex-col border-r bg-background md:w-56">
       <div className="flex h-14 items-center justify-center border-b px-4 md:justify-start">
         <Package className="size-5 md:hidden" />
-        <span className="hidden text-sm font-semibold md:block">
-          Mi Negocio
+        <span className="hidden truncate text-sm font-semibold md:block">
+          {businessName}
         </span>
       </div>
       <nav className="flex flex-1 flex-col gap-1 p-2">

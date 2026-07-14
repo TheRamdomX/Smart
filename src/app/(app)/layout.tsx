@@ -16,9 +16,14 @@ export default async function AppLayout({
     redirect("/login");
   }
 
+  const { data: settings } = await supabase
+    .from("settings")
+    .select("business_name")
+    .single();
+
   return (
     <div className="flex flex-1">
-      <Sidebar />
+      <Sidebar businessName={settings?.business_name ?? "Mi Negocio"} />
       <main className="flex-1 overflow-x-hidden p-4 md:p-8">{children}</main>
     </div>
   );

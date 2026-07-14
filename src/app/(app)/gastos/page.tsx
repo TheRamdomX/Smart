@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { todayLocal } from "@/lib/dates";
 import type { Expense, Settings } from "@/lib/types";
 import { ExpensesView } from "./expenses-view";
 
@@ -15,7 +16,7 @@ export default async function GastosPage({
   // Mes por defecto: el actual (YYYY-MM).
   const month = /^\d{4}-\d{2}$/.test(mes ?? "")
     ? mes!
-    : new Date().toISOString().slice(0, 7);
+    : todayLocal().slice(0, 7);
 
   const [year, monthNum] = month.split("-").map(Number);
   const from = `${month}-01`;

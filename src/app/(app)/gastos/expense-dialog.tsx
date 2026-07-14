@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { todayLocal } from "@/lib/dates";
 import { createExpense, updateExpense } from "./actions";
 
 export function ExpenseDialog({
@@ -37,7 +38,7 @@ export function ExpenseDialog({
   const [saving, setSaving] = useState(false);
   const [category, setCategory] = useState<string | undefined>(undefined);
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayLocal();
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();

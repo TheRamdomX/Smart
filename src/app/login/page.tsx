@@ -33,7 +33,18 @@ export default function LoginPage() {
     });
 
     if (error) {
-      setError("Correo o contraseña incorrectos.");
+      const messages: Record<string, string> = {
+        invalid_credentials: "Correo o contraseña incorrectos.",
+        email_not_confirmed:
+          "El correo del usuario no está confirmado. En el dashboard de Supabase, abre el usuario y confirma su email (o créalo de nuevo marcando “Auto Confirm User”).",
+        user_banned: "El usuario está bloqueado.",
+        over_request_rate_limit:
+          "Demasiados intentos. Espera un momento y vuelve a intentarlo.",
+      };
+      setError(
+        messages[error.code ?? ""] ??
+          `No se pudo iniciar sesión: ${error.message}`
+      );
       setLoading(false);
       return;
     }
