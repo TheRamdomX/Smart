@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 
 const productSchema = z.object({
   name: z.string().trim().min(1, "El nombre es obligatorio"),
-  sku: z.string().trim().optional(),
+  image_url: z.string().url().optional(),
   category: z.string().trim().optional(),
   cost: z.coerce.number().min(0, "El costo no puede ser negativo"),
   price: z.coerce.number().min(0, "El precio no puede ser negativo"),
@@ -24,14 +24,11 @@ export async function createProduct(formData: FormData): Promise<ActionResult> {
   const supabase = await createClient();
   const { error } = await supabase.from("products").insert({
     ...parsed.data,
-    sku: parsed.data.sku || null,
+    image_url: parsed.data.image_url || null,
     category: parsed.data.category || null,
   });
 
   if (error) {
-    if (error.code === "23505") {
-      return { ok: false, error: "Ya existe un producto con ese SKU." };
-    }
     return { ok: false, error: "No se pudo crear el producto." };
   }
 
@@ -53,15 +50,12 @@ export async function updateProduct(
     .from("products")
     .update({
       ...parsed.data,
-      sku: parsed.data.sku || null,
+      image_url: parsed.data.image_url || null,
       category: parsed.data.category || null,
     })
     .eq("id", id);
 
   if (error) {
-    if (error.code === "23505") {
-      return { ok: false, error: "Ya existe un producto con ese SKU." };
-    }
     return { ok: false, error: "No se pudo actualizar el producto." };
   }
 

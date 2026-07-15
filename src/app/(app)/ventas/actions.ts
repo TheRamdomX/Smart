@@ -14,6 +14,7 @@ const saleSchema = z.object({
       })
     )
     .min(1, "Agrega al menos un producto a la venta"),
+  payment_method: z.enum(["efectivo", "transferencia", "tarjeta"]),
   note: z.string().trim().optional(),
 });
 
@@ -29,6 +30,7 @@ export async function createSale(input: SaleInput): Promise<ActionResult> {
   const { error } = await supabase.rpc("create_sale", {
     items: parsed.data.items,
     sale_note: parsed.data.note || null,
+    payment_method: parsed.data.payment_method,
   });
 
   if (error) {

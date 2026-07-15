@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
   } else {
     const { data: items } = await supabase
       .from("sale_items")
-      .select("quantity, unit_price, unit_cost, products(name, sku), sales!inner(sold_at)")
+      .select("quantity, unit_price, unit_cost, products(name), sales!inner(sold_at, payment_method)")
       .gte("sales.sold_at", desde + "T00:00:00")
       .lte("sales.sold_at", hasta + "T23:59:59.999")
       .order("sold_at", { referencedTable: "sales" });
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
       [
         "Fecha",
         "Producto",
-        "SKU",
+        "Medio de pago",
         "Cantidad",
         "Precio unitario",
         "Costo unitario",
@@ -75,17 +75,19 @@ export async function GET(request: NextRequest) {
         "Margen",
       ],
       ...(items ?? []).map((item) => {
-        const sale = item.sales as unknown as { sold_at: string };
+        const sale = item.sales as unknown as {
+          sold_at: string;
+          payment_method: string;
+        };
         const product = item.products as unknown as {
           name: string;
-          sku: string | null;
         } | null;
         return [
           new Date(sale.sold_at).toLocaleString("es-CL", {
             timeZone: "America/Santiago",
           }),
           product?.name ?? "",
-          product?.sku ?? "",
+          sale.payment_method,
           item.quantity,
           item.unit_price,
           item.unit_cost,

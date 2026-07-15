@@ -1,7 +1,7 @@
 export type Product = {
   id: string;
   name: string;
-  sku: string | null;
+  image_url: string | null;
   category: string | null;
   cost: number;
   price: number;
@@ -23,11 +23,14 @@ export type InventoryMovement = {
   created_at: string;
 };
 
+export type PaymentMethod = "efectivo" | "transferencia" | "tarjeta";
+
 export type Sale = {
   id: string;
   sold_at: string;
   total: number;
   note: string | null;
+  payment_method: PaymentMethod;
 };
 
 export type SaleItem = {

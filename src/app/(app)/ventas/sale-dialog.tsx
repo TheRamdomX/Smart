@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
-import type { Product } from "@/lib/types";
+import type { PaymentMethod, Product } from "@/lib/types";
 import { formatCLP } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,6 +39,7 @@ export function SaleDialog({
 }) {
   const [lines, setLines] = useState<Line[]>([]);
   const [note, setNote] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("efectivo");
   const [saving, setSaving] = useState(false);
 
   const productById = useMemo(
@@ -72,6 +73,7 @@ export function SaleDialog({
   function reset() {
     setLines([]);
     setNote("");
+    setPaymentMethod("efectivo");
   }
 
   async function handleSubmit() {
@@ -97,6 +99,7 @@ export function SaleDialog({
     setSaving(true);
     const result = await createSale({
       items: lines,
+      payment_method: paymentMethod,
       note: note || undefined,
     });
     setSaving(false);
@@ -202,14 +205,32 @@ export function SaleDialog({
             </div>
           )}
 
-          <div className="space-y-2">
-            <Label htmlFor="sale-note">Nota</Label>
-            <Input
-              id="sale-note"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder="Opcional"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Medio de pago</Label>
+              <Select
+                value={paymentMethod}
+                onValueChange={(v) => setPaymentMethod(v as PaymentMethod)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="efectivo">Efectivo</SelectItem>
+                  <SelectItem value="transferencia">Transferencia</SelectItem>
+                  <SelectItem value="tarjeta">Tarjeta</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="sale-note">Nota</Label>
+              <Input
+                id="sale-note"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="Opcional"
+              />
+            </div>
           </div>
 
           <Separator />

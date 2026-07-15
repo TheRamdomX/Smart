@@ -2,8 +2,9 @@
 
 import { Fragment, useState } from "react";
 import { ChevronDown, ChevronRight, Plus } from "lucide-react";
-import type { Product, Sale, SaleItem } from "@/lib/types";
+import type { PaymentMethod, Product, Sale, SaleItem } from "@/lib/types";
 import { formatCLP, formatDateTime } from "@/lib/format";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -17,6 +18,12 @@ import { SaleDialog } from "./sale-dialog";
 
 export type SaleWithItems = Sale & {
   sale_items: (SaleItem & { products: { name: string } | null })[];
+};
+
+const paymentLabel: Record<PaymentMethod, string> = {
+  efectivo: "Efectivo",
+  transferencia: "Transferencia",
+  tarjeta: "Tarjeta",
 };
 
 export function SalesView({
@@ -51,6 +58,7 @@ export function SalesView({
                 <TableHead className="w-8" />
                 <TableHead>Fecha</TableHead>
                 <TableHead>Productos</TableHead>
+                <TableHead>Medio de pago</TableHead>
                 <TableHead>Nota</TableHead>
                 <TableHead className="text-right">Total</TableHead>
               </TableRow>
@@ -83,6 +91,11 @@ export function SalesView({
                         {sale.sale_items.length}{" "}
                         {sale.sale_items.length === 1 ? "producto" : "productos"}
                       </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">
+                          {paymentLabel[sale.payment_method] ?? sale.payment_method}
+                        </Badge>
+                      </TableCell>
                       <TableCell className="text-muted-foreground">
                         {sale.note ?? "—"}
                       </TableCell>
@@ -93,7 +106,7 @@ export function SalesView({
                     {isOpen && (
                       <TableRow className="bg-muted/30 hover:bg-muted/30">
                         <TableCell />
-                        <TableCell colSpan={4} className="py-3">
+                        <TableCell colSpan={5} className="py-3">
                           <Table>
                             <TableHeader>
                               <TableRow>

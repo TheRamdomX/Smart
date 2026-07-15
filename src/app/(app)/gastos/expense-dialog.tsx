@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { Expense } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -36,7 +36,11 @@ export function ExpenseDialog({
   onClose: () => void;
 }) {
   const [saving, setSaving] = useState(false);
-  const [category, setCategory] = useState<string | undefined>(undefined);
+  const [category, setCategory] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (open) setCategory(expense?.category ?? null);
+  }, [open, expense]);
 
   const today = todayLocal();
 
@@ -45,13 +49,12 @@ export function ExpenseDialog({
     setSaving(true);
 
     const formData = new FormData(e.currentTarget);
-    const cat = category ?? expense?.category;
-    if (!cat) {
+    if (!category) {
       toast.error("Selecciona una categoría.");
       setSaving(false);
       return;
     }
-    formData.set("category", cat);
+    formData.set("category", category);
 
     const result = expense
       ? await updateExpense(expense.id, formData)
@@ -60,7 +63,6 @@ export function ExpenseDialog({
     setSaving(false);
     if (result.ok) {
       toast.success(expense ? "Gasto actualizado." : "Gasto registrado.");
-      setCategory(undefined);
       onClose();
     } else {
       toast.error(result.error);
@@ -103,10 +105,7 @@ export function ExpenseDialog({
           </div>
           <div className="space-y-2">
             <Label>Categoría *</Label>
-            <Select
-              value={category ?? expense?.category ?? undefined}
-              onValueChange={(v) => setCategory(v ?? undefined)}
-            >
+            <Select value={category} onValueChange={setCategory}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecciona…" />
               </SelectTrigger>

@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Image from "next/image";
 import { toast } from "sonner";
-import { Plus, Search } from "lucide-react";
+import { ImageIcon, Plus, Search } from "lucide-react";
 import type { Product, Settings } from "@/lib/types";
 import { formatCLP } from "@/lib/format";
 import { Button } from "@/components/ui/button";
@@ -42,7 +43,6 @@ export function InventoryView({
       if (!q) return true;
       return (
         p.name.toLowerCase().includes(q) ||
-        (p.sku ?? "").toLowerCase().includes(q) ||
         (p.category ?? "").toLowerCase().includes(q)
       );
     });
@@ -73,7 +73,7 @@ export function InventoryView({
         <div className="relative w-full max-w-sm">
           <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Buscar por nombre, SKU o categoría…"
+            placeholder="Buscar por nombre o categoría…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="pl-8"
@@ -101,8 +101,8 @@ export function InventoryView({
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-14">Foto</TableHead>
                 <TableHead>Producto</TableHead>
-                <TableHead>SKU</TableHead>
                 <TableHead>Categoría</TableHead>
                 <TableHead className="text-right">Costo</TableHead>
                 <TableHead className="text-right">Precio</TableHead>
@@ -113,6 +113,22 @@ export function InventoryView({
             <TableBody>
               {filtered.map((p) => (
                 <TableRow key={p.id} className={p.active ? "" : "opacity-50"}>
+                  <TableCell>
+                    {p.image_url ? (
+                      <Image
+                        src={p.image_url}
+                        alt={p.name}
+                        width={40}
+                        height={40}
+                        unoptimized
+                        className="size-10 rounded-md border object-cover"
+                      />
+                    ) : (
+                      <div className="flex size-10 items-center justify-center rounded-md border border-dashed text-muted-foreground">
+                        <ImageIcon className="size-4" />
+                      </div>
+                    )}
+                  </TableCell>
                   <TableCell className="font-medium">
                     {p.name}
                     {!p.active && (
@@ -120,9 +136,6 @@ export function InventoryView({
                         Inactivo
                       </Badge>
                     )}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {p.sku ?? "—"}
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {p.category ?? "—"}
