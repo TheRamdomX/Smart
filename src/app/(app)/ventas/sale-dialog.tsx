@@ -193,7 +193,7 @@ export function SaleDialog({
         }
       }}
     >
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg max-h-[calc(100dvh-2rem)] flex flex-col">
         <DialogHeader>
           <DialogTitle>Nueva venta</DialogTitle>
           <DialogDescription>
@@ -202,7 +202,7 @@ export function SaleDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-4 flex-1 min-h-0 overflow-y-auto">
           <div className="space-y-2">
             <Label>Agregar producto</Label>
             <div className="flex gap-2">

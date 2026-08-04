@@ -111,7 +111,6 @@ export function InventoryView({
             <TableHeader>
               <TableRow>
                 <TableHead className="w-14">Foto</TableHead>
-                <TableHead>SKU</TableHead>
                 <TableHead>Producto</TableHead>
                 <TableHead>Categoría</TableHead>
                 <TableHead className="text-right">Costo</TableHead>
@@ -139,9 +138,6 @@ export function InventoryView({
                         <ImageIcon className="size-4" />
                       </div>
                     )}
-                  </TableCell>
-                  <TableCell className="font-mono text-xs text-muted-foreground">
-                    {p.sku}
                   </TableCell>
                   <TableCell className="font-medium">
                     {p.name}
