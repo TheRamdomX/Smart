@@ -130,6 +130,12 @@ export function ProductDialog({
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4" key={product?.id}>
+          {product && (
+            <div className="space-y-2">
+              <Label>SKU</Label>
+              <Input value={product.sku} readOnly className="font-mono bg-muted" />
+            </div>
+          )}
           <div className="space-y-2">
             <Label htmlFor="name">Nombre *</Label>
             <Input
@@ -222,6 +228,21 @@ export function ProductDialog({
                 required
               />
             </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="offer_price">Precio oferta (CLP)</Label>
+            <Input
+              id="offer_price"
+              name="offer_price"
+              type="number"
+              min="0"
+              step="1"
+              defaultValue={product?.offer_price ?? ""}
+              placeholder="Dejar vacío si no hay oferta"
+            />
+            <p className="text-xs text-muted-foreground">
+              Si se establece, se usará como precio de venta en lugar del precio normal.
+            </p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="min_stock">Stock mínimo (alerta)</Label>

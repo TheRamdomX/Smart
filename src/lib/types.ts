@@ -1,10 +1,12 @@
 export type Product = {
   id: string;
+  sku: string;
   name: string;
   image_url: string | null;
   category: string | null;
   cost: number;
   price: number;
+  offer_price: number | null;
   stock: number;
   min_stock: number;
   active: boolean;
@@ -31,6 +33,9 @@ export type Sale = {
   total: number;
   note: string | null;
   payment_method: PaymentMethod;
+  shipping_cost: number;
+  adjustment: number;
+  adjustment_note: string | null;
 };
 
 export type SaleItem = {

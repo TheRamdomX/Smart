@@ -40,6 +40,9 @@ export function SaleDialog({
   const [lines, setLines] = useState<Line[]>([]);
   const [note, setNote] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("efectivo");
+  const [shippingCost, setShippingCost] = useState(0);
+  const [adjustment, setAdjustment] = useState(0);
+  const [adjustmentNote, setAdjustmentNote] = useState("");
   const [saving, setSaving] = useState(false);
 
   const productById = useMemo(
@@ -47,10 +50,16 @@ export function SaleDialog({
     [products]
   );
 
-  const total = lines.reduce((acc, line) => {
+  function effectivePrice(p: Product) {
+    return p.offer_price != null ? p.offer_price : p.price;
+  }
+
+  const subtotal = lines.reduce((acc, line) => {
     const p = productById.get(line.product_id);
-    return acc + (p ? p.price * line.quantity : 0);
+    return acc + (p ? effectivePrice(p) * line.quantity : 0);
   }, 0);
+
+  const total = subtotal + shippingCost + adjustment;
 
   const availableProducts = products.filter(
     (p) => !lines.some((l) => l.product_id === p.id)
@@ -74,6 +83,9 @@ export function SaleDialog({
     setLines([]);
     setNote("");
     setPaymentMethod("efectivo");
+    setShippingCost(0);
+    setAdjustment(0);
+    setAdjustmentNote("");
   }
 
   async function handleSubmit() {
@@ -100,6 +112,9 @@ export function SaleDialog({
     const result = await createSale({
       items: lines,
       payment_method: paymentMethod,
+      shipping_cost: shippingCost,
+      adjustment,
+      adjustment_note: adjustmentNote || undefined,
       note: note || undefined,
     });
     setSaving(false);
@@ -152,7 +167,8 @@ export function SaleDialog({
               <SelectContent>
                 {availableProducts.map((p) => (
                   <SelectItem key={p.id} value={p.id} disabled={p.stock === 0}>
-                    {p.name} — {formatCLP(p.price)}
+                    {p.name} — {formatCLP(effectivePrice(p))}
+                    {p.offer_price != null && " (oferta)"}
                     {p.stock === 0 ? " (sin stock)" : ` (stock: ${p.stock})`}
                   </SelectItem>
                 ))}
@@ -173,7 +189,16 @@ export function SaleDialog({
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">{p.name}</p>
                       <p className="text-xs text-muted-foreground">
-                        {formatCLP(p.price)} · stock {p.stock}
+                        {p.offer_price != null ? (
+                          <>
+                            <span className="text-green-600 dark:text-green-400">{formatCLP(p.offer_price)}</span>
+                            {" "}
+                            <span className="line-through">{formatCLP(p.price)}</span>
+                          </>
+                        ) : (
+                          formatCLP(p.price)
+                        )}
+                        {" · stock "}{p.stock}
                       </p>
                     </div>
                     <Input
@@ -190,7 +215,7 @@ export function SaleDialog({
                       className="w-20 text-right"
                     />
                     <span className="w-24 text-right text-sm font-medium">
-                      {formatCLP(p.price * line.quantity)}
+                      {formatCLP(effectivePrice(p) * line.quantity)}
                     </span>
                     <Button
                       variant="ghost"
@@ -233,7 +258,63 @@ export function SaleDialog({
             </div>
           </div>
 
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="shipping-cost">Envío (CLP)</Label>
+              <Input
+                id="shipping-cost"
+                type="number"
+                min="0"
+                step="1"
+                value={shippingCost}
+                onChange={(e) => setShippingCost(Math.max(0, Number(e.target.value) || 0))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="adjustment">Ajuste (CLP)</Label>
+              <Input
+                id="adjustment"
+                type="number"
+                step="1"
+                value={adjustment}
+                onChange={(e) => setAdjustment(Number(e.target.value) || 0)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Negativo = descuento, positivo = cargo extra
+              </p>
+            </div>
+          </div>
+          {adjustment !== 0 && (
+            <div className="space-y-2">
+              <Label htmlFor="adjustment-note">Motivo del ajuste</Label>
+              <Input
+                id="adjustment-note"
+                value={adjustmentNote}
+                onChange={(e) => setAdjustmentNote(e.target.value)}
+                placeholder="Ej: Descuento por volumen, cargo especial…"
+              />
+            </div>
+          )}
+
           <Separator />
+          {(shippingCost > 0 || adjustment !== 0) && (
+            <div className="flex items-center justify-between text-sm text-muted-foreground">
+              <span>Subtotal productos</span>
+              <span>{formatCLP(subtotal)}</span>
+            </div>
+          )}
+          {shippingCost > 0 && (
+            <div className="flex items-center justify-between text-sm text-muted-foreground">
+              <span>Envío</span>
+              <span>{formatCLP(shippingCost)}</span>
+            </div>
+          )}
+          {adjustment !== 0 && (
+            <div className={`flex items-center justify-between text-sm ${adjustment < 0 ? "text-red-600 dark:text-red-400" : "text-muted-foreground"}`}>
+              <span>Ajuste{adjustmentNote ? `: ${adjustmentNote}` : ""}</span>
+              <span>{adjustment > 0 ? "+" : ""}{formatCLP(adjustment)}</span>
+            </div>
+          )}
           <div className="flex items-center justify-between text-lg font-semibold">
             <span>Total</span>
             <span>{formatCLP(total)}</span>

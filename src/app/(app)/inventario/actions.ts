@@ -10,6 +10,10 @@ const productSchema = z.object({
   category: z.string().trim().optional(),
   cost: z.coerce.number().min(0, "El costo no puede ser negativo"),
   price: z.coerce.number().min(0, "El precio no puede ser negativo"),
+  offer_price: z.preprocess(
+    (v) => (v === "" || v === undefined || v === null ? undefined : v),
+    z.coerce.number().min(0, "El precio de oferta no puede ser negativo").optional()
+  ),
   min_stock: z.coerce.number().int().min(0, "El stock mínimo no puede ser negativo"),
 });
 
@@ -26,6 +30,7 @@ export async function createProduct(formData: FormData): Promise<ActionResult> {
     ...parsed.data,
     image_url: parsed.data.image_url || null,
     category: parsed.data.category || null,
+    offer_price: parsed.data.offer_price ?? null,
   });
 
   if (error) {
@@ -52,6 +57,7 @@ export async function updateProduct(
       ...parsed.data,
       image_url: parsed.data.image_url || null,
       category: parsed.data.category || null,
+      offer_price: parsed.data.offer_price ?? null,
     })
     .eq("id", id);
 

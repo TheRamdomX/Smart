@@ -102,10 +102,12 @@ export function InventoryView({
             <TableHeader>
               <TableRow>
                 <TableHead className="w-14">Foto</TableHead>
+                <TableHead>SKU</TableHead>
                 <TableHead>Producto</TableHead>
                 <TableHead>Categoría</TableHead>
                 <TableHead className="text-right">Costo</TableHead>
                 <TableHead className="text-right">Precio</TableHead>
+                <TableHead className="text-right">Oferta</TableHead>
                 <TableHead className="text-right">Stock</TableHead>
                 <TableHead />
               </TableRow>
@@ -129,6 +131,9 @@ export function InventoryView({
                       </div>
                     )}
                   </TableCell>
+                  <TableCell className="font-mono text-xs text-muted-foreground">
+                    {p.sku}
+                  </TableCell>
                   <TableCell className="font-medium">
                     {p.name}
                     {!p.active && (
@@ -145,6 +150,15 @@ export function InventoryView({
                   </TableCell>
                   <TableCell className="text-right">
                     {formatCLP(p.price)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {p.offer_price != null ? (
+                      <span className="text-green-600 dark:text-green-400">
+                        {formatCLP(p.offer_price)}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
                   </TableCell>
                   <TableCell className="text-right">
                     <span className="tabular-nums">{p.stock}</span>

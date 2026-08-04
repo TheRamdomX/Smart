@@ -15,6 +15,9 @@ const saleSchema = z.object({
     )
     .min(1, "Agrega al menos un producto a la venta"),
   payment_method: z.enum(["efectivo", "transferencia", "tarjeta"]),
+  shipping_cost: z.number().min(0, "El cargo por envío no puede ser negativo").default(0),
+  adjustment: z.number().default(0),
+  adjustment_note: z.string().trim().optional(),
   note: z.string().trim().optional(),
 });
 
@@ -31,6 +34,9 @@ export async function createSale(input: SaleInput): Promise<ActionResult> {
     items: parsed.data.items,
     sale_note: parsed.data.note || null,
     payment_method: parsed.data.payment_method,
+    p_shipping_cost: parsed.data.shipping_cost,
+    p_adjustment: parsed.data.adjustment,
+    p_adjustment_note: parsed.data.adjustment_note || null,
   });
 
   if (error) {

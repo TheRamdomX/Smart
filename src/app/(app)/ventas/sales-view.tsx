@@ -60,6 +60,8 @@ export function SalesView({
                 <TableHead>Productos</TableHead>
                 <TableHead>Medio de pago</TableHead>
                 <TableHead>Nota</TableHead>
+                <TableHead className="text-right">Envío</TableHead>
+                <TableHead className="text-right">Ajuste</TableHead>
                 <TableHead className="text-right">Total</TableHead>
               </TableRow>
             </TableHeader>
@@ -99,6 +101,16 @@ export function SalesView({
                       <TableCell className="text-muted-foreground">
                         {sale.note ?? "—"}
                       </TableCell>
+                      <TableCell className="text-right text-muted-foreground">
+                        {sale.shipping_cost > 0
+                          ? formatCLP(sale.shipping_cost)
+                          : "—"}
+                      </TableCell>
+                      <TableCell className={`text-right ${sale.adjustment < 0 ? "text-red-600 dark:text-red-400" : "text-muted-foreground"}`}>
+                        {sale.adjustment !== 0
+                          ? `${sale.adjustment > 0 ? "+" : ""}${formatCLP(sale.adjustment)}`
+                          : "—"}
+                      </TableCell>
                       <TableCell className="text-right font-medium">
                         {formatCLP(sale.total)}
                       </TableCell>
@@ -106,7 +118,7 @@ export function SalesView({
                     {isOpen && (
                       <TableRow className="bg-muted/30 hover:bg-muted/30">
                         <TableCell />
-                        <TableCell colSpan={5} className="py-3">
+                        <TableCell colSpan={7} className="py-3">
                           <Table>
                             <TableHeader>
                               <TableRow>

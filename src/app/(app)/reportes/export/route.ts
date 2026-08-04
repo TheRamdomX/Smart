@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
   } else {
     const { data: items } = await supabase
       .from("sale_items")
-      .select("quantity, unit_price, unit_cost, products(name), sales!inner(sold_at, payment_method)")
+      .select("quantity, unit_price, unit_cost, products(name), sales!inner(sold_at, payment_method, shipping_cost, adjustment, adjustment_note)")
       .gte("sales.sold_at", desde + "T00:00:00")
       .lte("sales.sold_at", hasta + "T23:59:59.999")
       .order("sold_at", { referencedTable: "sales" });
@@ -73,11 +73,17 @@ export async function GET(request: NextRequest) {
         "Costo unitario",
         "Subtotal",
         "Margen",
+        "Envío",
+        "Ajuste",
+        "Motivo ajuste",
       ],
       ...(items ?? []).map((item) => {
         const sale = item.sales as unknown as {
           sold_at: string;
           payment_method: string;
+          shipping_cost: number;
+          adjustment: number;
+          adjustment_note: string | null;
         };
         const product = item.products as unknown as {
           name: string;
@@ -93,6 +99,9 @@ export async function GET(request: NextRequest) {
           item.unit_cost,
           item.quantity * item.unit_price,
           item.quantity * (item.unit_price - item.unit_cost),
+          sale.shipping_cost,
+          sale.adjustment,
+          sale.adjustment_note ?? "",
         ];
       }),
     ]);
