@@ -189,6 +189,7 @@ export function ReportsView({
       <div className="flex flex-wrap gap-2">
         <Button
           variant="outline"
+          nativeButton={false}
           render={<a href={`${exportBase}&tipo=ventas`} download />}
         >
           <Download className="size-4" />
@@ -196,6 +197,7 @@ export function ReportsView({
         </Button>
         <Button
           variant="outline"
+          nativeButton={false}
           render={<a href={`${exportBase}&tipo=gastos`} download />}
         >
           <Download className="size-4" />

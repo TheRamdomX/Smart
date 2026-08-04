@@ -3,12 +3,19 @@
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import { toast } from "sonner";
-import { ImageIcon, Plus, Search } from "lucide-react";
+import { ImageIcon, Plus, QrCode, Search } from "lucide-react";
 import type { Product, Settings } from "@/lib/types";
 import { formatCLP } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -17,6 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { QrCodeDisplay } from "@/components/barcode/qr-code-display";
 import { ProductDialog } from "./product-dialog";
 import { MovementDialog } from "./movement-dialog";
 import { HistoryDialog } from "./history-dialog";
@@ -35,6 +43,7 @@ export function InventoryView({
   const [creating, setCreating] = useState(false);
   const [movementFor, setMovementFor] = useState<Product | null>(null);
   const [historyFor, setHistoryFor] = useState<Product | null>(null);
+  const [qrFor, setQrFor] = useState<Product | null>(null);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -172,6 +181,14 @@ export function InventoryView({
                     <div className="flex justify-end gap-1">
                       <Button
                         variant="ghost"
+                        size="icon"
+                        onClick={() => setQrFor(p)}
+                        title="Ver codigo QR"
+                      >
+                        <QrCode className="size-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
                         size="sm"
                         onClick={() => setMovementFor(p)}
                       >
@@ -222,6 +239,17 @@ export function InventoryView({
         onClose={() => setMovementFor(null)}
       />
       <HistoryDialog product={historyFor} onClose={() => setHistoryFor(null)} />
+      <Dialog open={qrFor !== null} onOpenChange={(o) => !o && setQrFor(null)}>
+        <DialogContent className="sm:max-w-xs">
+          <DialogHeader>
+            <DialogTitle>Codigo QR</DialogTitle>
+            <DialogDescription>{qrFor?.name}</DialogDescription>
+          </DialogHeader>
+          {qrFor && (
+            <QrCodeDisplay value={qrFor.sku} productName={qrFor.name} size={200} />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

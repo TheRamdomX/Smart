@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { ImageIcon, X } from "lucide-react";
 import type { Product, Settings } from "@/lib/types";
 import { createClient } from "@/lib/supabase/client";
+import { QrCodeDisplay } from "@/components/barcode/qr-code-display";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -134,6 +135,7 @@ export function ProductDialog({
             <div className="space-y-2">
               <Label>SKU</Label>
               <Input value={product.sku} readOnly className="font-mono bg-muted" />
+              <QrCodeDisplay value={product.sku} productName={product.name} size={160} />
             </div>
           )}
           <div className="space-y-2">

@@ -1,10 +1,19 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import { toast } from "sonner";
-import { Trash2 } from "lucide-react";
+import { ScanLine, Trash2 } from "lucide-react";
 import type { PaymentMethod, Product } from "@/lib/types";
 import { formatCLP } from "@/lib/format";
+
+const QrScanner = dynamic(
+  () =>
+    import("@/components/barcode/qr-scanner").then((m) => ({
+      default: m.QrScanner,
+    })),
+  { ssr: false }
+);
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -43,6 +52,7 @@ export function SaleDialog({
   const [shippingCost, setShippingCost] = useState(0);
   const [adjustment, setAdjustment] = useState(0);
   const [adjustmentNote, setAdjustmentNote] = useState("");
+  const [scanning, setScanning] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const productById = useMemo(
@@ -86,7 +96,52 @@ export function SaleDialog({
     setShippingCost(0);
     setAdjustment(0);
     setAdjustmentNote("");
+    setScanning(false);
   }
+
+  const handleScan = useCallback(
+    (decodedText: string) => {
+      setScanning(false);
+      const scannedSku = decodedText.trim();
+      const product = products.find((p) => p.sku === scannedSku);
+
+      if (!product) {
+        toast.error(`No se encontro un producto con SKU ${scannedSku}.`);
+        return;
+      }
+      if (!product.active) {
+        toast.error(`El producto "${product.name}" esta inactivo.`);
+        return;
+      }
+
+      setLines((prev) => {
+        const existing = prev.find((l) => l.product_id === product.id);
+        if (existing) {
+          if (existing.quantity + 1 > product.stock) {
+            toast.error(
+              `Stock insuficiente para ${product.name}: disponible ${product.stock}.`
+            );
+            return prev;
+          }
+          toast.success(
+            `${product.name} — cantidad: ${existing.quantity + 1}`
+          );
+          return prev.map((l) =>
+            l.product_id === product.id
+              ? { ...l, quantity: l.quantity + 1 }
+              : l
+          );
+        }
+        if (product.stock === 0) {
+          toast.error(`${product.name} no tiene stock disponible.`);
+          return prev;
+        }
+        toast.success(`${product.name} agregado a la venta.`);
+        return [...prev, { product_id: product.id, quantity: 1 }];
+      });
+    },
+    [products]
+  );
 
   async function handleSubmit() {
     if (lines.length === 0) {
@@ -150,31 +205,57 @@ export function SaleDialog({
         <div className="space-y-4">
           <div className="space-y-2">
             <Label>Agregar producto</Label>
-            <Select
-              value=""
-              onValueChange={(v) => v && addLine(v)}
-              disabled={availableProducts.length === 0}
-            >
-              <SelectTrigger>
-                <SelectValue
-                  placeholder={
-                    availableProducts.length === 0
-                      ? "No quedan productos por agregar"
-                      : "Selecciona un producto…"
-                  }
-                />
-              </SelectTrigger>
-              <SelectContent>
-                {availableProducts.map((p) => (
-                  <SelectItem key={p.id} value={p.id} disabled={p.stock === 0}>
-                    {p.name} — {formatCLP(effectivePrice(p))}
-                    {p.offer_price != null && " (oferta)"}
-                    {p.stock === 0 ? " (sin stock)" : ` (stock: ${p.stock})`}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex gap-2">
+              <Select
+                value=""
+                onValueChange={(v) => v && addLine(v)}
+                disabled={availableProducts.length === 0}
+              >
+                <SelectTrigger className="flex-1">
+                  <SelectValue
+                    placeholder={
+                      availableProducts.length === 0
+                        ? "No quedan productos por agregar"
+                        : "Selecciona un producto…"
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableProducts.map((p) => (
+                    <SelectItem key={p.id} value={p.id} disabled={p.stock === 0}>
+                      {p.name} — {formatCLP(effectivePrice(p))}
+                      {p.offer_price != null && " (oferta)"}
+                      {p.stock === 0 ? " (sin stock)" : ` (stock: ${p.stock})`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                type="button"
+                variant={scanning ? "secondary" : "outline"}
+                size="icon"
+                onClick={() => setScanning(!scanning)}
+                title="Escanear codigo QR"
+              >
+                <ScanLine className="size-4" />
+              </Button>
+            </div>
           </div>
+
+          {scanning && (
+            <div className="space-y-2">
+              <QrScanner active={scanning} onScan={handleScan} />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="w-full"
+                onClick={() => setScanning(false)}
+              >
+                Cerrar escaner
+              </Button>
+            </div>
+          )}
 
           {lines.length > 0 && (
             <div className="space-y-2">
